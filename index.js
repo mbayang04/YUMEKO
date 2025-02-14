@@ -3,12 +3,12 @@ var myStream = null; // Initialisation à null pour éviter l'affichage avant l'
 
 // Fonction pour ajouter une vidéo sans duplication
 function ajoutVideo(stream, userId) {
-    let existingVideo = document.getElementById(video-${userId});
+    let existingVideo = document.getElementById(`video-${userId}`);
 
     // Vérifier si la vidéo existe déjà pour cet utilisateur
     if (!existingVideo) {
         let video = document.createElement('video');
-        video.id = video-${userId};
+        video.id = `video-${userId}`;
         video.srcObject = stream;
         video.autoplay = true;
         video.controls = true;
@@ -71,54 +71,5 @@ function appelUser() {
     document.getElementById('add').value = ""; // Réinitialiser l'entrée
 }
 
-function addScreenShare() {
-    var name = document.getElementById('share').value.trim();
-    document.getElementById('share').value = ""; // Réinitialiser l'entrée
-
-    if (!name || !peer) {
-        alert("Veuillez entrer un nom valide et vous enregistrer d'abord !");
-        return;
-    }
-
-    navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: true })
-        .then((screenStream) => {
-            console.log('Partage d\'écran démarré');
-
-            // Supprimer l'ancienne vidéo de partage d'écran si elle existe
-            let existingScreenVideo = document.getElementById(video-screen-${name});
-            if (existingScreenVideo) existingScreenVideo.remove();
-
-            // Ajouter la vidéo du partage pour l'administrateur
-            ajoutVideo(screenStream, screen-${name});
-
-            // Envoyer le flux de partage à l'invité
-            let call = peer.call(name, screenStream);
-
-            // L’invité reçoit le partage et l’affiche
-            call.on('stream', function(remoteStream) {
-                let userScreenVideoId = video-screen-${name};
-                
-                // Supprimer la vidéo normale de l’invité (évite les doublons)
-                let existingUserVideo = document.getElementById(video-${name});
-                if (existingUserVideo) existingUserVideo.remove();
-
-                // Ajouter la vidéo du partage pour l'invité
-                if (!document.getElementById(userScreenVideoId)) {
-                    ajoutVideo(remoteStream, userScreenVideoId);
-                }
-            });
-
-            // Quand l’administrateur arrête le partage, il remet sa caméra
-            screenStream.getTracks()[0].onended = function() {
-                console.log("Partage d'écran terminé");
-                document.getElementById(video-screen-${name})?.remove(); // Supprimer le partage
-                ajoutVideo(myStream, "self"); // Remettre la caméra normale
-            };
-        })
-        .catch((err) => {
-            console.error('Erreur lors du partage d\'écran:', err);
-            alert('Impossible de partager l\'écran.');
-        });
-}
 
 
