@@ -1,3 +1,4 @@
+
 var peer; 
 var myStream; 
 
@@ -17,6 +18,7 @@ function register() {
   var name = document.getElementById('name').value; 
   try { 
     peer = new Peer(name); 
+
     navigator.mediaDevices.getUserMedia({video: true, audio: true}).then((stream) => { 
       myStream = stream; 
       ajoutVideo(stream); 
@@ -41,13 +43,33 @@ function register() {
 function appelUser() { 
   try { 
     var name = document.getElementById('add').value; 
+    if (!peer) {
+      console.error('Erreur: Peer n\'est pas initialisé.');
+      return;
+    }
     document.getElementById('add').value = ""; 
     var call = peer.call(name, myStream); 
     call.on('stream', function(remoteStream) { 
       ajoutVideo(remoteStream); 
     }); 
+    call.on('error', function(err) {
+      console.error('Erreur lors de l\'appel:', err);
+    });
   } catch (error) { 
     console.error('Erreur lors de l\'appel:', error); 
   } 
 } 
 
+// Initialisation de Peer
+function initPeer() {
+  peer = new Peer();
+  peer.on('open', (id) => {
+    console.log('Mon ID de peer est : ' + id);
+  });
+  peer.on('error', (err) => {
+    console.error('Erreur PeerJS:', err);
+  });
+}
+
+// Démarrer l'initialisation de Peer
+initPeer();
