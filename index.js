@@ -1,3 +1,4 @@
+
 var peer;
 var myStream = null; // Initialisation à null pour éviter l'affichage avant l'enregistrement
 
@@ -13,7 +14,6 @@ function ajoutVideo(stream, userId) {
         video.autoplay = true;
         video.controls = true;
         document.getElementById('participants').appendChild(video);
-        console.log(`Vidéo ajoutée pour l'utilisateur: ${userId}`);
     }
 }
 
@@ -29,14 +29,6 @@ function register() {
     try {
         peer = new Peer(name);  // Créer un peer avec le nom de l'utilisateur
 
-        peer.on('open', function(id) {
-            console.log('Mon ID de peer est : ' + id);
-        });
-
-        peer.on('error', function(err) {
-            console.error('Erreur PeerJS:', err);
-        });
-
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then(function(stream) {
                 myStream = stream; // Stocke le flux local
@@ -51,9 +43,6 @@ function register() {
                     call.answer(myStream); // Répondre avec le flux local
                     call.on('stream', function(remoteStream) {
                         ajoutVideo(remoteStream, call.peer); // Ajouter la vidéo de l'appelant si elle n'existe pas déjà
-                    });
-                    call.on('close', function() {
-                        console.log('Appel terminé avec:', call.peer);
                     });
                 });
             })
@@ -80,14 +69,6 @@ function appelUser() {
     
     call.on('stream', function(remoteStream) {
         ajoutVideo(remoteStream, name); // Ajouter la vidéo de l'utilisateur appelé
-    });
-
-    call.on('close', function() {
-        console.log('Appel terminé avec:', name);
-    });
-
-    call.on('error', function(err) {
-        console.error('Erreur lors de l\'appel:', err);
     });
 
     document.getElementById('add').value = ""; // Réinitialiser l'entrée
