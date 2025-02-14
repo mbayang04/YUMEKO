@@ -1,65 +1,68 @@
+/* Style global */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Fond rouge avec un léger dégradé */
 body {
-    background: #ff0000 url('https://www.transparenttextures.com/patterns/butterflies.png'); /* Rouge avec motif papillons */
-    color: white;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    margin: 0;
-    padding: 20px;
+  background: linear-gradient(45deg, #ff4d4d, #ff1a1a);
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  animation: backgroundAnimation 5s infinite alternate;
 }
 
-#annonce {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 10px;
-    font-size: 20px;
-    font-weight: bold;
+/* Animation du fond */
+@keyframes backgroundAnimation {
+  0% {
+    background: linear-gradient(45deg, #ff4d4d, #ff1a1a);
+  }
+  50% {
+    background: linear-gradient(45deg, #ff1a1a, #ff4d4d);
+  }
+  100% {
+    background: linear-gradient(45deg, #ff4d4d, #ff1a1a);
+  }
 }
 
+/* Carte centrale animée */
+.card {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: cardAnimation 3s ease-in-out infinite alternate;
+}
+
+/* Animation de la carte */
+@keyframes cardAnimation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Texte à l'intérieur de la carte */
 h1 {
-    color: #fff;
+  color: #ff3333;
+  font-size: 2.5em;
 }
 
-form {
-    margin: 20px auto;
+p {
+  color: #444;
+  font-size: 1.2em;
 }
 
-input {
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    width: 250px;
-    text-align: center;
-}
-
-input[type="submit"] {
-    background: yellow;
-    color: black;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-input[type="submit"]:hover {
-    background: orange;
-}
-
-#participants {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 20px;
-}
-
-.video-container {
-    width: 45%;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 10px;
-    border-radius: 10px;
-    margin: 10px;
-}
-
-video {
-    width: 100%;
-    border-radius: 10px;
 }
 
 
