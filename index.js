@@ -1,138 +1,124 @@
-let peer;
-let myStream;
+var peer;
+var myStream = null; // Initialisation à null pour éviter l'affichage avant l'enregistrement
 
-/**
- * Gérer les erreurs de PeerJS
- */
-function handlePeerErrors() {
-    peer.on('error', (err) => {
-        console.error("Erreur PeerJS :", err);
-        alert("Erreur PeerJS : " + err.type);
-    });
+// Fonction pour ajouter une vidéo sans duplication
+function ajoutVideo(stream, userId) {
+    let existingVideo = document.getElementById(video-${userId});
+
+    // Vérifier si la vidéo existe déjà pour cet utilisateur
+    if (!existingVideo) {
+        let video = document.createElement('video');
+        video.id = video-${userId};
+        video.srcObject = stream;
+        video.autoplay = true;
+        video.controls = true;
+        document.getElementById('participants').appendChild(video);
+    }
 }
 
-/**
- * Ajouter une vidéo (locale ou distante) à l'écran
- */
-function ajoutVideo(stream, isLocal = false) {
-    let videoContainer = isLocal ? document.getElementById('myVideo') : document.getElementById('remoteVideos');
-    
-    let video = document.createElement('video');
-    video.autoplay = true;
-    video.controls = true;
-    video.srcObject = stream;
-    
-    // Supprimer les anciennes vidéos (si c'est local)
-    if (isLocal) {
-        videoContainer.innerHTML = ''; 
+// Fonction pour enregistrer l'utilisateur et initialiser le peer
+function register() {
+    var name = document.getElementById('name').value.trim();
+
+    if (!name) {
+        alert("Veuillez entrer un nom !");
+        return;
     }
 
-    videoContainer.appendChild(video);
+    try {
+        peer = new Peer(name);  // Créer un peer avec le nom de l'utilisateur
+
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(function(stream) {
+                myStream = stream; // Stocke le flux local
+                ajoutVideo(stream, "self"); // Ajoute la vidéo uniquement après l'enregistrement du nom
+                document.getElementById('register').style.display = 'none';
+                document.getElementById('userAdd').style.display = 'block';
+                document.getElementById('userShare').style.display = 'block';
+
+                // Réception d'un appel entrant
+                peer.on('call', function(call) {
+                    call.answer(myStream); // Répondre avec le flux local
+                    call.on('stream', function(remoteStream) {
+                        ajoutVideo(remoteStream, call.peer); // Ajouter la vidéo de l'appelant si elle n'existe pas déjà
+                    });
+                });
+            })
+            .catch(function(err) {
+                console.log('Échec de l\'accès au flux vidéo/audio', err);
+            });
+
+    } catch (error) {
+        console.error("Erreur lors de la création du peer:", error);
+    }
 }
 
-/**
- * Inscription à PeerJS et activation de la webcam/micro
- */
-function register() {
-    const name = document.getElementById('name').value.trim();
-    if (!name) return alert("Veuillez entrer un nom !");
+// Fonction pour appeler un utilisateur
+function appelUser() {
+    var name = document.getElementById('add').value.trim();
+    
+    if (!name || !myStream) {
+        alert("Veuillez entrer un nom valide et vous enregistrer d'abord !");
+        return;
+    }
 
-    peer = new Peer(name, {
-        debug: 2,
-        config: {
-            iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                { urls: "stun:stun1.l.google.com:19302" },
-                { urls: "turn:yourturnserver.com:3478", username: "user", credential: "password" }
-            ]
-        }
+    var call = peer.call(name, myStream);
+    
+    call.on('stream', function(remoteStream) {
+        ajoutVideo(remoteStream, name); // Ajouter la vidéo de l'utilisateur appelé
     });
 
-    handlePeerErrors();
+    document.getElementById('add').value = ""; // Réinitialiser l'entrée
+}
 
-    peer.on('open', (id) => {
-        console.log("Connexion PeerJS établie avec l'ID :", id);
-    });
+function addScreenShare() {
+    var name = document.getElementById('share').value.trim();
+    document.getElementById('share').value = ""; // Réinitialiser l'entrée
 
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-        .then((stream) => {
-            myStream = stream;
-            ajoutVideo(stream, true);
+    if (!name || !peer) {
+        alert("Veuillez entrer un nom valide et vous enregistrer d'abord !");
+        return;
+    }
 
-            document.getElementById('register').style.display = 'none';
-            document.getElementById('userAdd').style.display = 'block';
-            document.getElementById('userShare').style.display = 'block';
+    navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: true })
+        .then((screenStream) => {
+            console.log('Partage d\'écran démarré');
 
-            peer.on('call', (call) => {
-                console.log("📞 Appel entrant...");
-                call.answer(myStream);
-                call.on('stream', (remoteStream) => {
-                    ajoutVideo(remoteStream);
-                });
+            // Supprimer l'ancienne vidéo de partage d'écran si elle existe
+            let existingScreenVideo = document.getElementById(video-screen-${name});
+            if (existingScreenVideo) existingScreenVideo.remove();
+
+            // Ajouter la vidéo du partage pour l'administrateur
+            ajoutVideo(screenStream, screen-${name});
+
+            // Envoyer le flux de partage à l'invité
+            let call = peer.call(name, screenStream);
+
+            // L’invité reçoit le partage et l’affiche
+            call.on('stream', function(remoteStream) {
+                let userScreenVideoId = video-screen-${name};
+                
+                // Supprimer la vidéo normale de l’invité (évite les doublons)
+                let existingUserVideo = document.getElementById(video-${name});
+                if (existingUserVideo) existingUserVideo.remove();
+
+                // Ajouter la vidéo du partage pour l'invité
+                if (!document.getElementById(userScreenVideoId)) {
+                    ajoutVideo(remoteStream, userScreenVideoId);
+                }
             });
+
+            // Quand l’administrateur arrête le partage, il remet sa caméra
+            screenStream.getTracks()[0].onended = function() {
+                console.log("Partage d'écran terminé");
+                document.getElementById(video-screen-${name})?.remove(); // Supprimer le partage
+                ajoutVideo(myStream, "self"); // Remettre la caméra normale
+            };
         })
         .catch((err) => {
-            console.error("Erreur accès caméra/micro :", err);
-            alert("Vérifiez vos permissions de caméra et microphone !");
+            console.error('Erreur lors du partage d\'écran:', err);
+            alert('Impossible de partager l\'écran.');
         });
-}
-
-/**
- * Appeler un autre utilisateur
- */
-function appelUser() {
-    const name = document.getElementById('add').value.trim();
-    if (!name) return alert("Veuillez entrer le nom de l'utilisateur !");
-
-    if (!peer || !peer.open) {
-        return alert("Vous devez être connecté avant d'appeler quelqu'un !");
-    }
-
-    const call = peer.call(name, myStream);
-    call.on('stream', (remoteStream) => {
-        ajoutVideo(remoteStream);
-    });
-}
-
-/**
- * Partager son écran avec un utilisateur
- */
-function addScreenShare() {
-    const name = document.getElementById('share').value.trim();
-    if (!name) return alert("Veuillez entrer le nom de l'utilisateur !");
-
-    if (!peer || !peer.open) {
-        return alert("Vous devez être connecté avant de partager votre écran !");
-    }
-
-    navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-        .then((stream) => {
-            ajoutVideo(stream, true);
-            const call = peer.call(name, stream);
-        })
-        .catch((error) => {
-            console.error("Erreur partage d'écran :", error);
-            alert("Impossible de partager l'écran.");
-        });
-}
-
-/**
- * Déconnexion et arrêt des flux
- */
-function deconnexion() {
-    if (myStream) {
-        myStream.getTracks().forEach(track => track.stop());
-    }
-    if (peer) {
-        peer.destroy();
-    }
-
-    document.getElementById('register').style.display = 'block';
-    document.getElementById('userAdd').style.display = 'none';
-    document.getElementById('userShare').style.display = 'none';
-
-    document.getElementById('myVideo').innerHTML = '';
-    document.getElementById('remoteVideos').innerHTML = '';
 }
 
 
