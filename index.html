@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Vidéo en Temps Réel</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="index.js"></script>
+</head>
+<body>
+
+    <!-- Bannière d'annonce permanente -->
+    <div id="annonce">
+        <p>dalal ak djamb</p>
+    </div>
+
+    <div id="register">
+        <h1>Ton Nom:</h1>
+        <form onsubmit="register(); return false;">
+            <input type="text" id="name" placeholder="Entrez votre nom" required>
+            <input type="submit" value="Rejoindre">
+        </form>
+    </div>
+
+    <div id="userAdd" style="display: none;">
+        <h1>Se Connecter à un autre utilisateur:</h1>
+        <form onsubmit="appelUser(); return false;">
+            <input type="text" id="add" placeholder="Nom de l'utilisateur" required>
+            <input type="submit" value="Ajouter">
+        </form>
+    </div>
+
+    <div id="userShare" style="display: none;">
+        <h1>Partager son écran:</h1>
+        <form onsubmit="addScreenShare(); return false;">
+            <input type="text" id="share" placeholder="Nom de l'utilisateur" required>
+            <input type="submit" value="Partager">
+        </form>
+    </div>
+
+    <div id="participants"></div>
+
+    <script src="index.js"></script>
+</body>
+</html>
