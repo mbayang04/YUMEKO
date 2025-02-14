@@ -1,3 +1,7 @@
+
+
+
+
 var peer;
 var myStream = null; // Initialisation à null pour éviter l'affichage avant l'enregistrement
 
@@ -70,6 +74,50 @@ function appelUser() {
 
     document.getElementById('add').value = ""; // Réinitialiser l'entrée
 }
+
+// Fonction pour activer le partage d'écran
+function startScreenShare() {
+    if (!peer || !myStream) {
+        alert("Veuillez vous enregistrer d'abord et obtenir un flux vidéo !");
+        return;
+    }
+
+    // Demander l'accès au partage d'écran
+    navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: true })
+        .then((screenStream) => {
+            console.log('Partage d\'écran démarré');
+
+            // Supprimer l'ancienne vidéo de partage d'écran si elle existe
+            let existingScreenVideo = document.getElementById(`video-screen-self`);
+            if (existingScreenVideo) existingScreenVideo.remove();
+
+            // Ajouter la vidéo du partage d'écran
+            ajoutVideo(screenStream, "screen-self");
+
+            // Envoi du flux de partage d'écran à l'autre utilisateur
+            var name = document.getElementById('add').value.trim();
+            if (name) {
+                var call = peer.call(name, screenStream);
+
+                // Réception du flux vidéo de l'interlocuteur (appels vidéo classiques)
+                call.on('stream', function(remoteStream) {
+                    ajoutVideo(remoteStream, name); // Ajouter la vidéo de l'interlocuteur
+                });
+            }
+
+            // Arrêter le partage d'écran et revenir à la caméra locale
+            screenStream.getTracks()[0].onended = function() {
+                console.log("Partage d'écran terminé");
+                document.getElementById('video-screen-self')?.remove(); // Supprimer le partage d'écran
+                ajoutVideo(myStream, "self"); // Remettre la caméra normale
+            };
+        })
+        .catch((err) => {
+            console.error('Erreur lors du partage d\'écran:', err);
+            alert('Impossible de partager l\'écran.');
+        });
+}
+
 
 
 
