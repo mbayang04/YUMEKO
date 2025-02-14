@@ -38,6 +38,7 @@ function register() {
 
                 // Réception d'un appel entrant
                 peer.on('call', function(call) {
+                    console.log('Appel entrant de:', call.peer);
                     call.answer(myStream); // Répondre avec le flux local
                     call.on('stream', function(remoteStream) {
                         ajoutVideo(remoteStream, call.peer); // Ajouter la vidéo de l'appelant si elle n'existe pas déjà
@@ -62,6 +63,7 @@ function appelUser() {
         return;
     }
 
+    console.log('Appel en cours vers:', name);
     var call = peer.call(name, myStream);
     
     call.on('stream', function(remoteStream) {
@@ -120,6 +122,7 @@ function addScreenShare() {
             alert('Impossible de partager l\'écran.');
         });
 }
+
 
 
 
