@@ -43,6 +43,17 @@ function register() {
                     call.on('stream', function(remoteStream) {
                         ajoutVideo(remoteStream, call.peer); // Ajouter la vidéo de l'appelant si elle n'existe pas déjà
                     });
+                    call.on('close', function() {
+                        console.log('Appel terminé avec:', call.peer);
+                    });
+                });
+
+                peer.on('error', function(err) {
+                    console.error('Erreur PeerJS:', err);
+                });
+
+                peer.on('open', function(id) {
+                    console.log('Mon ID de peer est : ' + id);
                 });
             })
             .catch(function(err) {
@@ -68,6 +79,14 @@ function appelUser() {
     
     call.on('stream', function(remoteStream) {
         ajoutVideo(remoteStream, name); // Ajouter la vidéo de l'utilisateur appelé
+    });
+
+    call.on('close', function() {
+        console.log('Appel terminé avec:', name);
+    });
+
+    call.on('error', function(err) {
+        console.error('Erreur lors de l\'appel:', err);
     });
 
     document.getElementById('add').value = ""; // Réinitialiser l'entrée
@@ -122,6 +141,7 @@ function addScreenShare() {
             alert('Impossible de partager l\'écran.');
         });
 }
+
 
 
 
