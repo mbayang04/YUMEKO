@@ -1,3 +1,4 @@
+
 let peer;
 let myStream;
 
@@ -48,7 +49,6 @@ function register() {
                 iceServers: [
                     { urls: "stun:stun.l.google.com:19302" },
                     { urls: "stun:stun1.l.google.com:19302" },
-                    // Remplacez ce TURN server par un serveur fonctionnel
                     { urls: "turn:yourturnserver.com:3478", username: "user", credential: "password" }
                 ]
             }
@@ -62,6 +62,16 @@ function register() {
 
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then((stream) => {
+                console.log("Flux récupéré :", stream);
+                if (!stream.getAudioTracks().length) {
+                    console.warn("⚠️ Aucun flux audio détecté !");
+                    alert("Aucun flux audio détecté, vérifiez votre micro !");
+                }
+                if (!stream.getVideoTracks().length) {
+                    console.warn("⚠️ Aucun flux vidéo détecté !");
+                    alert("Aucun flux vidéo détecté, vérifiez votre caméra !");
+                }
+                
                 myStream = stream;
                 ajoutVideo(stream, true);
 
@@ -70,9 +80,13 @@ function register() {
                 document.getElementById('userShare').style.display = 'block';
 
                 peer.on('call', (call) => {
-                    console.log("Appel entrant reçu !");
+                    console.log("📞 Appel entrant détecté !");
                     call.answer(myStream);
-                    call.on('stream', (remoteStream) => ajoutVideo(remoteStream));
+                    call.on('stream', (remoteStream) => {
+                        console.log("✅ Flux distant reçu :", remoteStream);
+                        ajoutVideo(remoteStream);
+                    });
+                    call.on('error', (err) => console.error("Erreur appel entrant :", err));
                 });
             })
             .catch((err) => {
@@ -99,14 +113,10 @@ function appelUser() {
         console.log(`Tentative d'appel à ${name}...`);
         const call = peer.call(name, myStream);
         call.on('stream', (remoteStream) => {
-            console.log("Appel réussi, ajout de la vidéo...");
+            console.log("✅ Appel réussi, flux vidéo/audio reçu !");
             ajoutVideo(remoteStream);
         });
-
-        call.on('error', (err) => {
-            console.error("Erreur lors de l'appel :", err);
-            alert("Erreur lors de l'appel : " + err);
-        });
+        call.on('error', (err) => console.error("❌ Erreur appel sortant :", err));
     } catch (error) {
         console.error("Erreur lors de l'appel :", error);
         alert("Échec de l'appel.");
@@ -130,10 +140,7 @@ function addScreenShare() {
             try {
                 const call = peer.call(name, stream);
                 ajoutVideo(stream, true);
-                call.on('error', (err) => {
-                    console.error("Erreur lors du partage d'écran :", err);
-                    alert("Erreur lors du partage d'écran.");
-                });
+                call.on('error', (err) => console.error("Erreur lors du partage d'écran :", err));
             } catch (error) {
                 console.error("Erreur lors du partage d'écran :", error);
                 alert("Impossible de partager l'écran.");
@@ -161,3 +168,4 @@ function deconnexion() {
     document.getElementById('participants').innerHTML = '';
     document.getElementById('myVideo').innerHTML = '';
 }
+
