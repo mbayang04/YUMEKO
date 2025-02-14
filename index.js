@@ -1,4 +1,5 @@
-var peer;
+
+   var peer;
 var myStream = null; // Initialisation à null pour éviter l'affichage avant l'enregistrement
 
 // Fonction pour ajouter une vidéo sans duplication
@@ -13,6 +14,7 @@ function ajoutVideo(stream, userId) {
         video.autoplay = true;
         video.controls = true;
         document.getElementById('participants').appendChild(video);
+        console.log(`Vidéo ajoutée pour l'utilisateur: ${userId}`);
     }
 }
 
@@ -141,6 +143,7 @@ function addScreenShare() {
             alert('Impossible de partager l\'écran.');
         });
 }
+
 
 
 
