@@ -1,75 +1,36 @@
 
-var peer; 
-var myStream; 
+// Configuration de SimpleWebRTC
+const webrtc = new SimpleWebRTC({
+  localVideoEl: 'localVideo',
+  remoteVideosEl: 'remoteVideos',
+  autoRequestMedia: true,
+});
 
-function ajoutVideo(stream) { 
-  try { 
-    var video = document.createElement('video'); 
-    document.getElementById('participants').appendChild(video); 
-    video.autoplay = true; 
-    video.controls = true; 
-    video.srcObject = stream; 
-  } catch (error) { 
-    console.error('Erreur lors de l\'ajout de la vidéo:', error); 
-  } 
-} 
+// Démarrer l'appel
+document.getElementById('startCall').addEventListener('click', () => {
+  webrtc.joinRoom('ma-salle-de-reunion');
+});
 
-function register() { 
-  var name = document.getElementById('name').value; 
-  try { 
-    peer = new Peer(name); 
-
-    navigator.mediaDevices.getUserMedia({video: true, audio: true}).then((stream) => { 
-      myStream = stream; 
-      ajoutVideo(stream); 
-      document.getElementById('register').style.display = 'none'; 
-      document.getElementById('userAdd').style.display = 'block'; 
-      document.getElementById('userShare').style.display = 'block'; 
-
-      peer.on('call', function(call) { 
-        call.answer(myStream); 
-        call.on('stream', function(remoteStream) { 
-          ajoutVideo(remoteStream); 
-        }); 
-      }); 
-    }).catch((err) => { 
-      console.error('Échec de l\'obtention du flux local:', err); 
-    }); 
-  } catch (error) { 
-    console.error('Erreur lors de l\'enregistrement:', error); 
-  } 
-} 
-
-function appelUser() { 
-  try { 
-    var name = document.getElementById('add').value; 
-    if (!peer) {
-      console.error('Erreur: Peer n\'est pas initialisé.');
-      return;
-    }
-    document.getElementById('add').value = ""; 
-    var call = peer.call(name, myStream); 
-    call.on('stream', function(remoteStream) { 
-      ajoutVideo(remoteStream); 
-    }); 
-    call.on('error', function(err) {
-      console.error('Erreur lors de l\'appel:', err);
-    });
-  } catch (error) { 
-    console.error('Erreur lors de l\'appel:', error); 
-  } 
-} 
-
-// Initialisation de Peer
-function initPeer() {
-  peer = new Peer();
-  peer.on('open', (id) => {
-    console.log('Mon ID de peer est : ' + id);
+// Partager l'écran
+document.getElementById('shareScreen').addEventListener('click', () => {
+  webrtc.shareScreen((err, stream) => {
+      if (err) {
+          console.error('Erreur lors du partage de l\'écran:', err);
+      } else {
+          console.log('Partage d\'écran démarré');
+      }
   });
-  peer.on('error', (err) => {
-    console.error('Erreur PeerJS:', err);
-  });
-}
+});
 
-// Démarrer l'initialisation de Peer
-initPeer();
+// Gestion des événements
+webrtc.on('readyToCall', () => {
+  console.log('Prêt à passer un appel');
+});
+
+webrtc.on('videoAdded', (video, peer) => {
+  console.log('Nouvelle vidéo ajoutée:', peer.id);
+});
+
+webrtc.on('videoRemoved', (video, peer) => {
+  console.log('Vidéo retirée:', peer.id);
+});
