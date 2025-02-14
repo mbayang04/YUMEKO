@@ -1,54 +1,65 @@
-/* style.css */
-
 body {
-    background-color: rgb(67, 2, 2);
-    background-image: url(https://www.deviantart.com/jaymemica/art/Yumeko-fanart-870313664);
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
+    background: #ff0000 url('https://www.transparenttextures.com/patterns/butterflies.png'); /* Rouge avec motif papillons */
     color: white;
     font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
 }
 
 #annonce {
-    background-color: darkred;
+    background-color: rgba(255, 255, 255, 0.2);
     color: white;
     padding: 10px;
-    text-align: center;
-    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
 }
 
-#userAdd {
-    background-color: darkred;
-    padding: 20px;
-    margin: 10px auto;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    max-width: 400px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+h1 {
+    color: #fff;
 }
 
-input[type="text"], input[type="submit"] {
-    width: calc(100% - 20px);
+form {
+    margin: 20px auto;
+}
+
+input {
     padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ccc;
+    border: none;
     border-radius: 5px;
+    width: 250px;
+    text-align: center;
 }
 
 input[type="submit"] {
-    background-color: white;
-    color: darkred;
-    border: none;
+    background: yellow;
+    color: black;
     cursor: pointer;
+    font-weight: bold;
 }
 
 input[type="submit"]:hover {
-    background-color: lightcoral;
+    background: orange;
 }
 
-#participants video {
-    width: 100%;
-    margin: 10px 0;
+#participants {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
 }
+
+.video-container {
+    width: 45%;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px;
+}
+
+video {
+    width: 100%;
+    border-radius: 10px;
+}
+
 
